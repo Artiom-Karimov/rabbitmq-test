@@ -1,6 +1,6 @@
-import { connect, Connection, Channel } from 'amqplib';
+import { connect, Connection, Channel, ConsumeMessage, ConsumeMessageFields } from 'amqplib';
 
-export class AmqpOperator {
+export class AmqpReceiver {
   private connection?: Connection;
   private channel?: Channel;
 
@@ -19,8 +19,12 @@ export class AmqpOperator {
     await this.connection?.close();
   }
 
-  public async send(data: any) {
-    const buf = Buffer.from(JSON.stringify(data));
-    this.channel?.sendToQueue(this.queueName, buf);
+  public subscribe(fn: (data: any) => boolean) {
+    this.channel?.prefetch(1);
+    this.channel?.consume(this.queueName, msg => {
+      const ack = fn(Buffer.from(msg.content).toString());
+      if (ack) this.channel?.ack(msg);
+      else this.channel?.nack(msg);
+    })
   }
 }

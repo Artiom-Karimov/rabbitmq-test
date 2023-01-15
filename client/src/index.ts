@@ -1,1 +1,20 @@
-console.log('hello');
+import dotenv from 'dotenv';
+dotenv.config();
+import { AmqpReceiver } from './amqp.receiver.js';
+
+const queueName = process.env.QUEUE_NAME || 'test-queue';
+
+const print = (data: any): boolean => {
+  console.log(data);
+  return true;
+}
+
+const start = async () => {
+  const rabbit = new AmqpReceiver(queueName);
+  await rabbit.connect();
+
+  console.log('Waiting for messages from rabbit...');
+  rabbit.subscribe(print);
+}
+
+start();

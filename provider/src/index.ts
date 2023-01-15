@@ -1,12 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import inquirer from 'inquirer';
-import { AmqpOperator } from './amqp.operator.js';
+import { AmqpSender } from './amqp.sender.js';
 
 const queueName = process.env.QUEUE_NAME || 'test-queue';
 
 const start = async () => {
-  const rabbit = new AmqpOperator(queueName);
+  const rabbit = new AmqpSender(queueName);
   await rabbit.connect();
 
   console.log('Now type something to send to rabbit or "exit" to stop');
