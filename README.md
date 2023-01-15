@@ -1,0 +1,1 @@
+## Jusst the minimum example of working with rabbitmq
