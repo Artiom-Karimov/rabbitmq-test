@@ -1,18 +1,22 @@
-import { config } from 'dotenv';
-config();
-import * as amqp from 'amqplib';
+import dotenv from 'dotenv';
+dotenv.config();
+import inquirer from 'inquirer';
+import { AmqpOperator } from './amqp.operator.js';
 
-let connection: amqp.Connection;
-let channel: amqp.Channel;
+const queueName = process.env.QUEUE_NAME || 'test-queue';
 
-const connect = async () => {
-  try {
-    connection = await amqp.connect(process.env.RABBITMQ_CONNECTION || 'amqp://localhost:6572');
-    channel = await connection.createChannel();
-    await channel.assertQueue('test-queue');
-  } catch (error) {
-    console.error(error);
+const start = async () => {
+  const rabbit = new AmqpOperator(queueName);
+  await rabbit.connect();
+
+  console.log('Now type something to send to rabbit or "exit" to stop');
+  while (true) {
+    const data = await inquirer.prompt([{ name: 'text', message: '=>' }])
+    if (data.text === 'exit') break;
+    await rabbit.send(data.text);
   }
+
+  await rabbit.close();
 }
 
-connect();
+start();
